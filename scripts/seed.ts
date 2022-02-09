@@ -1,6 +1,6 @@
 import {getUnnamedAccounts, ethers} from 'hardhat';
-
-const messages = ['Hello', '你好', 'سلام', 'здравствуйте', 'Habari', 'Bonjour', 'नमस्ते'];
+import {Imageboard} from '../frontend/src/hardhat/typechain/Imageboard';
+import * as fixtures from '../test/fixtures.json';
 
 async function waitFor<T>(p: Promise<{wait: () => Promise<T>}>): Promise<T> {
   const tx = await p;
@@ -10,13 +10,18 @@ async function waitFor<T>(p: Promise<{wait: () => Promise<T>}>): Promise<T> {
   return tx.wait();
 }
 
+const sample = (arr: string[]) => arr[Math.floor(Math.random() * arr.length)];
+
 async function main() {
   const others = await getUnnamedAccounts();
-  for (let i = 0; i < messages.length; i++) {
-    const sender = others[i];
+
+  for (let i = 0; i < fixtures.images.length; i++) {
+    const sender = sample(others);
     if (sender) {
-      const greetingsRegistryContract = await ethers.getContract('GreetingsRegistry', sender);
-      await waitFor(greetingsRegistryContract.setMessage(messages[i]));
+      const image = fixtures.images[i];
+      const imageboardContract: Imageboard = (await ethers.getContract('Imageboard', sender)) as Imageboard;
+      await waitFor(imageboardContract.createThread(`0x${image.bzzhash}`));
+      // TODO add comments
     }
   }
 }
