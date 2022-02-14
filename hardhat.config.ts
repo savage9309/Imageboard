@@ -97,7 +97,7 @@ const config: HardhatUserConfig = {
     : undefined,
 
   tenderly: {
-    project: 'template-ethereum-contracts',
+    project: 'imageboard',
     username: process.env.TENDERLY_USERNAME as string,
   },
 };

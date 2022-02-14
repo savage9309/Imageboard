@@ -25,3 +25,5 @@ secrets.txt
 
 gateway/bee/
 gateway/bee-clef/
+
+frontend/src/hardhat/deployments/localhost
