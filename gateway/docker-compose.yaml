@@ -11,8 +11,9 @@ services:
     volumes:
       - ./bee-clef:/app/data
 
+
   bee:
-    image: ethersphere/bee:1.4.3
+    image: ethersphere/bee:latest
     command: start
     restart: unless-stopped
     environment:

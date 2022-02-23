@@ -1,23 +1,21 @@
 //SPDX-License-Identifier: Unlicense
 pragma solidity 0.8.9;
+import "hardhat-deploy/solc_0.8/proxy/Proxied.sol";
 import "hardhat/console.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
-contract Imageboard {
-    IERC20 private bzzToken;
+contract Imageboard is Proxied {
+    uint256 public bzzFee = 10**13;
+
+    ERC20 public bzzToken;
     bytes32[] private threadIds;
 
     mapping(bytes32 => Post) private posts;
-    mapping(address => bytes32[]) private addressToThreads;
-    mapping(address => bytes32[]) private addressToComments;
-    mapping(address => bytes32) private addressToPostId;
-    mapping(address => bytes32) private addressToBatchId;
+    mapping(address => bytes32[]) private addressToThreadIds;
+    mapping(address => bytes32[]) private addressToCommentIds;
+    mapping(address => int256) private addressToSocialScore;
 
-    enum VoteType {
-        NONE,
-        UP,
-        DOWN
-    }
     enum PostType {
         THREAD,
         COMMENT
@@ -41,8 +39,12 @@ contract Imageboard {
         PostType postType;
     }
 
-    constructor(address bzzContractAddress) {
-        bzzToken = IERC20(bzzContractAddress);
+    function postUpgrade(address _bzzTokenAddress) public proxied {
+        bzzToken = ERC20(_bzzTokenAddress);
+    }
+
+    constructor(address _bzzTokenAddress) {
+        postUpgrade(_bzzTokenAddress);
     }
 
     function getPaginatedThreadIds(uint256 _page, uint256 _resultsPerPage)
@@ -86,7 +88,8 @@ contract Imageboard {
 
     function createThread(bytes32 _threadBzzhash) public returns (bool succeed) {
         bytes32 threadId = keccak256(abi.encode(msg.sender, _threadBzzhash));
-
+        uint256 fee = getFee(msg.sender);
+        require(bzzToken.transferFrom(msg.sender, address(this), fee), "failed transfer");
         posts[threadId] = Post({
             id: threadId,
             index: threadIds.length,
@@ -99,9 +102,8 @@ contract Imageboard {
             rating: 0,
             postType: PostType.THREAD
         });
-
         threadIds.push(threadId);
-        addressToThreads[msg.sender].push(threadId);
+        addressToThreadIds[msg.sender].push(threadId);
         emit ThreadCreated(threadId);
         return true;
     }
@@ -114,7 +116,7 @@ contract Imageboard {
     }
 
     function getThreadIdsByAddress(address addr) public view returns (bytes32[] memory) {
-        return addressToThreads[addr];
+        return addressToThreadIds[addr];
     }
 
     function getTotalThreads() public view returns (uint256) {
@@ -124,9 +126,9 @@ contract Imageboard {
     function createComment(bytes32 _id, bytes32 _commentBzzhash) public returns (bool succeed) {
         Post storage post = posts[_id];
         require(post.exists, "thread or comment doesn't exist");
-
         bytes32 commentId = keccak256(abi.encode(msg.sender, _commentBzzhash));
-
+        uint256 fee = getFee(msg.sender);
+        require(bzzToken.transferFrom(msg.sender, address(this), fee), "failed transfer");
         posts[commentId] = Post({
             id: commentId,
             index: 0,
@@ -141,7 +143,7 @@ contract Imageboard {
         });
 
         post.commentIds.push(commentId);
-        addressToComments[msg.sender].push(commentId);
+        addressToCommentIds[msg.sender].push(commentId);
 
         if (post.postType == PostType.COMMENT) {
             emit CommentUpdated(post.id);
@@ -161,14 +163,17 @@ contract Imageboard {
         return comment;
     }
 
-    function getCommentBzzHashesByAddress(address addr) public view returns (bytes32[] memory) {
-        return addressToComments[addr];
+    function getCommentIdsByAddress(address addr) public view returns (bytes32[] memory) {
+        return addressToCommentIds[addr];
     }
 
-    function voteUp(bytes32 _id, uint _amount) public returns (bool succeed) {
+    function upVote(bytes32 _id) public returns (bool succeed) {
         Post storage post = posts[_id];
+        require(post.exists, "thread or comment doesn't exist");
+        uint256 fee = getFee(msg.sender);
+        require(bzzToken.transferFrom(msg.sender, address(this), fee), "failed transfer");
         post.rating++;
-        bzzToken.transferFrom(msg.sender, address(this), _amount);
+        addressToSocialScore[post.owner]++;
         if (post.postType == PostType.COMMENT) {
             emit CommentUpdated(post.id);
         }
@@ -178,9 +183,13 @@ contract Imageboard {
         return true;
     }
 
-    function voteDown(bytes32 _id) public returns (bool succeed) {
+    function downVote(bytes32 _id) public returns (bool succeed) {
         Post storage post = posts[_id];
+        require(post.exists, "thread or comment doesn't exist");
+        uint256 fee = getFee(msg.sender);
+        require(bzzToken.transferFrom(msg.sender, address(this), fee), "failed transfer");
         post.rating--;
+        addressToSocialScore[post.owner]--;
         if (post.postType == PostType.COMMENT) {
             emit CommentUpdated(post.id);
         }
@@ -190,14 +199,31 @@ contract Imageboard {
         return true;
     }
 
-    function setBatchId(bytes32 _batchId) public returns (bool succeed) {
-        addressToBatchId[msg.sender] = _batchId;
-        return true;
+    function getSocialScore(address addr) public view returns (int256) {
+        return addressToSocialScore[addr];
     }
 
-    function getBatchId() public view returns (bytes32 batchId) {
-        return addressToBatchId[msg.sender];
+    function getFee(address addr) public view returns (uint256 fee) {
+        int256 socialScore = addressToSocialScore[addr];
+        uint256 multiplier = getMultiplier(socialScore);
+        return bzzFee * multiplier;
     }
 
-
+    function getMultiplier(int256 socialScore) public pure returns (uint256 fee) {
+        if (socialScore >= 2) {
+            return 1;
+        }
+        if (socialScore >= 1) {
+            return 2;
+        }
+        if (socialScore >= 0) {
+            return 3;
+        }
+        if (socialScore >= -1) {
+            return 4;
+        }
+        if (socialScore >= -2) {
+            return 5;
+        }
+    }
 }

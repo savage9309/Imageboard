@@ -1,6 +1,7 @@
 import 'dotenv/config';
 import {HardhatUserConfig} from 'hardhat/types';
 import 'hardhat-deploy';
+import '@openzeppelin/hardhat-upgrades';
 import '@nomiclabs/hardhat-ethers';
 import 'hardhat-gas-reporter';
 import '@typechain/hardhat';
@@ -31,6 +32,7 @@ const config: HardhatUserConfig = {
   },
   networks: addForkConfiguration({
     hardhat: {
+      chainId: 1337, // to fix : https://github.com/MetaMask/metamask-extension/issues/13638
       initialBaseFeePerGas: 0, // to fix : https://github.com/sc-forks/solidity-coverage/issues/652, see https://github.com/sc-forks/solidity-coverage/issues/652#issuecomment-896330136
     },
     localhost: {

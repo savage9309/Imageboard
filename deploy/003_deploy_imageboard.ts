@@ -6,14 +6,14 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const {deploy} = hre.deployments;
   const useProxy = !hre.network.live;
 
-  const bzzContractAddress = '0xdbf3ea6f5bee45c02255b2c26a16f300502f68da';
+  const xBzzContractAddress = '0xdbf3ea6f5bee45c02255b2c26a16f300502f68da';
 
   // proxy only in non-live network (localhost and hardhat network) enabling HCR (Hot Contract Replacement)
   // in live network, proxy is disabled and constructor is invoked
   await deploy('Imageboard', {
     from: deployer,
-    args: [bzzContractAddress],
-    //proxy: useProxy && 'postUpgrade',
+    args: [xBzzContractAddress],
+    proxy: useProxy && 'postUpgrade',
     log: true,
     autoMine: true, // speed up deployment on local network (ganache, hardhat), no effect on live networks
   });
