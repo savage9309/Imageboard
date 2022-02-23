@@ -5,26 +5,18 @@ import {useContext, useCallback, useState, useEffect } from 'react';
 import {useDropzone} from 'react-dropzone'
 import { Address, Bee, FileUploadOptions, PostageBatch, Tag } from '@ethersphere/bee-js';
 import { AppContext } from '../state/context';
-import { addEthRpcError, addThread, addThreadTransaction, getAllPostageBatch, sendBzzApprove, sendThread  } from '../state/actionCreators';
+import { addThread, addThreadTransaction, getAllPostageBatch, sendBzzApprove, sendThread  } from '../state/actionCreators';
 import {IThreadTransaction} from '../state/state'
 import toast from 'react-hot-toast';
-import { serializeError } from 'eth-rpc-errors'
 import { Link } from "react-router-dom";
 import useInterval from "../hooks/useInterval";
-import { SerializedEthereumRpcError } from "eth-rpc-errors/dist/classes";
 import { formatUnits, parseUnits } from "ethers/lib/utils";
-
-
-
-
-
-
 
 const Nav: React.FC = () => {
     const { swarm } = window
     const { isDarkMode, toggle } = useDarkMode()
     const { state, dispatch } = useContext(AppContext);
-    const { imageboard, bzzBalance, bzzAllowance, postageBatchId } = state
+    const { imageboard, bzzBalance, bzzAllowance, batchId } = state
     const { account, library, chainId  } = useWeb3React()
   
     const [ filePreview, setFilePreview ] = useState<string | null>(null)
@@ -32,41 +24,31 @@ const Nav: React.FC = () => {
     const [ bzzTag, setBzzTag ] = useState<Tag | null>(null)
 
     const [ bee, setBee ] = useState<Bee>()
-
-
     useEffect(()=>{
       if(!swarm) return
       const { web2Helper } = swarm
-      //const beeDebugApi = web2Helper.fakeBeeApiAddress()
-      const beeDebugApi = 'http://localhost:1633'
-      const bee = new Bee(beeDebugApi);
+      //const beeApi = web2Helper.fakeBeeApiAddress()
+      const beeApi = 'http://localhost:1633'
+      const bee = new Bee(beeApi);
       setBee(bee)
-    },[window])
+    },[swarm])
   
-    useEffect(()=>{
-      console.log(bzzAllowance)
-    },[bzzAllowance])
-
-    
-
 
     const startUpload = async () =>{
       if(!imageboard) return false
       if(!bee) return false
       if(!file) return false
       if(!account) return false
-      if(!postageBatchId) return false
+      if(!batchId) return false
       try {
         const tag: Tag = await bee.createTag()
         setBzzTag(tag)
         const options: FileUploadOptions = { tag: tag.uid, contentType: file.type }
-        const { reference } = await bee.uploadFile(postageBatchId, file, file.name, options)
+        const { reference } = await bee.uploadFile(batchId, file, file.name, options)
         dispatch(sendThread(account, library, reference))
       } 
       catch (e){
         console.log(e)
-        const ethRpcError: SerializedEthereumRpcError = serializeError(e);
-        dispatch(addEthRpcError(ethRpcError));
       }
       finally {
         setBzzTag(null)
@@ -168,37 +150,33 @@ const Nav: React.FC = () => {
 
             <div>
 
+              {account && (
+                
                 <button 
-                    className="inline-block text-sm px-4 py-2 mr-1 leading-none border rounded text-white border-white hover:border-transparent hover:text-teal-500 hover:bg-white mt-4 lg:mt-0"
-                    onClick={handleApprove}
+                  className="inline-block text-sm px-4 py-2 mr-1 leading-none border rounded text-white border-white hover:border-transparent hover:text-teal-500 hover:bg-white mt-4 lg:mt-0"
+                  onClick={handleApprove}
                 >
-                    {bzzAllowance &&
-                      `Allowance: ${formatUnits(bzzAllowance, 16)} BZZ`
-                    }
-                    {!bzzAllowance && 'no Allowance found'}
-
+                  {bzzAllowance && `Allowance: ${formatUnits(bzzAllowance, 16)} BZZ` }
+                  {!bzzAllowance && 'no Allowance found'}
                 </button>
+              )}
 
 
-                {postageBatchId &&
+                {batchId &&
                   <div {...getRootProps()} className="dropzone-wrap inline-block text-sm px-4 py-2 mr-1 leading-none border rounded text-white border-white hover:border-transparent hover:text-teal-500 hover:bg-white hover:cursor-pointer mt-4 lg:mt-0">
                     <input {...getInputProps()} />
                     {bzzTag ? (`Uploading ${Math.round((bzzTag.processed/bzzTag.total)*100)}%`) : 'Click or Drop files here'}
                   </div>
                 }
 
-                {!postageBatchId  &&
+                {!batchId  &&
                   <button 
                       className="inline-block text-sm px-4 py-2 leading-none border rounded text-white border-white hover:border-transparent hover:text-teal-500 hover:bg-white mt-4 lg:mt-0"
                       onClick={handleGetPostageBatchId}
                   >
-                      get postageBatchId
+                      get batchId
                   </button>
                 }
-
-
-
-
 
                 <button 
                     className="inline-block text-sm px-4 py-2 leading-none border rounded text-white border-white hover:border-transparent hover:text-teal-500 hover:bg-white mt-4 lg:mt-0"

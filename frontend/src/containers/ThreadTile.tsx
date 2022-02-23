@@ -15,6 +15,7 @@ interface ThreadTileProps {
 }
 
 export default function ThreadTile({ threadId }: ThreadTileProps) {
+  const { swarm } = window
   const { state, dispatch } = useContext(AppContext);
   const { threads, imageboard } = state
 
@@ -35,9 +36,8 @@ export default function ThreadTile({ threadId }: ThreadTileProps) {
 
   const [imgSrc, setImgSrc] = useState<string | undefined>();
   useEffect(()=>{
-    if(!window) return
+    if(!swarm) return
     if(!localThread) return
-    const { swarm } = window
     setImgSrc(
       swarm.bzzLink.bzzProtocolToFakeUrl(`bzz://${localThread.bzzhash.replace('0x', "")}`)
     )

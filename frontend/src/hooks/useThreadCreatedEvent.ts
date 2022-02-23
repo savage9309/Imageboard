@@ -7,10 +7,12 @@ export default function useThreadCreatedEvent() {
   const {state, dispatch} = useContext(AppContext);
   const {imageboard} = state;
 
-  const run = useCallback( (bzzhash: string, log: Log) => {
+  const run = useCallback(
+    (bzzhash: string, log: Log) => {
       dispatch(removeThreadTransaction(log.transactionHash));
       dispatch(addThreadIds([bzzhash]));
-    },[dispatch, getAndAddThreadById]
+    },
+    [dispatch, getAndAddThreadById]
   );
 
   useEffect((): any => {

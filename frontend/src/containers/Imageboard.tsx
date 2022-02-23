@@ -8,7 +8,7 @@ import ThreadList from './ThreadList';
 import ThreadDetails from './ThreadDetails';
 import React from 'react';
 import Nav from './Nav';
-import { getBzzContract, getImageboardContract, getDeployments, getBzzBalance, getBzzAllowance } from '../state/actionCreators';
+import { getBzzContract, getImageboardContract, getDeployments, getBzzBalance, getBzzAllowance, getAllPostageBatch } from '../state/actionCreators';
 import { ConnectWallet, useWallet } from '@web3-ui/core';
 import useEagerConnect from '../hooks/useEagerConnect';
 import useInactiveListener from '../hooks/useInactiveListener';
@@ -19,9 +19,11 @@ import useCommentUpdatedEvent from '../hooks/useCommentUpdatedEvent';
 
 
 export default function Imageboard() {
-  const { connector, activate, error , library, chainId, account} = useWeb3React()
+  const {swarm} = window
+  const { connector, activate, error, library, chainId, account, active } = useWeb3React()
   const { state, dispatch } = useContext(AppContext);
   const { imageboardDeployment, imageboard, bzz } = state
+  
   // handle logic to recognize the connector currently being activated
   const [activatingConnector, setActivatingConnector] = useState<any>()
   useEffect(() => {
@@ -60,13 +62,17 @@ export default function Imageboard() {
     dispatch(getBzzAllowance(account))
   }, [account, bzz])
 
+  useEffect(()=>{ 
+    if(!account) return
+    if(!bzz) return
+    dispatch(getAllPostageBatch())
+  }, [account, bzz])
+  
 
   useThreadCreatedEvent()
   useThreadUpdatedEvent()
   useCommentUpdatedEvent()
   
-
-
 
   const ErrorMessage = () => {
     

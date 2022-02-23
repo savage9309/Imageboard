@@ -3,7 +3,6 @@ import {ActionType, AppAction} from './actions';
 
 export function appReducer(state: AppState, action: AppAction): AppState {
   switch (action.type) {
-
     case ActionType.SetImageboardDeployment:
       return {...state, ...action.payload};
 
@@ -11,23 +10,22 @@ export function appReducer(state: AppState, action: AppAction): AppState {
       return {...state, ...action.payload};
 
     case ActionType.SetImageboardContract:
-      return { ...state, ...action.payload};
+      return {...state, ...action.payload};
 
     case ActionType.SetBzzContract:
-      return { ...state, ...action.payload};
+      return {...state, ...action.payload};
 
-      
     case ActionType.SetBzzBalance:
-      return { ...state, ...action.payload};
-      
-    case ActionType.SetBzzAllowance:
-      return { ...state, ...action.payload};
+      return {...state, ...action.payload};
 
-    case ActionType.SetPostageBatchId:
-      return { ...state, ...action.payload };
-      
+    case ActionType.SetBzzAllowance:
+      return {...state, ...action.payload};
+
+    case ActionType.SetBatchId:
+      return {...state, ...action.payload};
+
     case ActionType.SetCurrentPage:
-      return { ...state, ...action.payload};
+      return {...state, ...action.payload};
 
     case ActionType.ThreadListDidMount:
       return {
@@ -76,12 +74,13 @@ export function appReducer(state: AppState, action: AppAction): AppState {
         threadTransactions: [...state.threadTransactions, action.payload.threadTransaction],
       };
 
-
-      case ActionType.RemoveThreadTransaction:
-        return {
-          ...state,
-          threadTransactions: state.threadTransactions.filter((threadTransaction) => threadTransaction.txHash !== action.payload.txHash)
-        };
+    case ActionType.RemoveThreadTransaction:
+      return {
+        ...state,
+        threadTransactions: state.threadTransactions.filter(
+          (threadTransaction) => threadTransaction.txHash !== action.payload.txHash
+        ),
+      };
 
     case ActionType.ResetThreads:
       return {
@@ -127,13 +126,12 @@ export function appReducer(state: AppState, action: AppAction): AppState {
             : thread
         ),
       };
-  
+
     case ActionType.AddComment:
       const comments = action.payload.endOfList
         ? [...state.comments, action.payload.comment]
         : [action.payload.comment, ...state.comments];
       return {...state, comments};
-
 
     case ActionType.UpdateComment:
       return {

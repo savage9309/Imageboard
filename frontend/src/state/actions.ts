@@ -2,8 +2,7 @@ import {Imageboard, IERC20} from '../hardhat/typechain';
 
 import {BigNumber, Contract} from 'ethers';
 import {Thread, Comment, DeploymentLite, ICommentTransaction, IThreadTransaction} from './state';
-import {SerializedEthereumRpcError} from 'eth-rpc-errors/dist/classes';
-
+import {BatchId} from '@ethersphere/bee-js';
 
 export enum ActionType {
   AddEthRpcError,
@@ -19,7 +18,7 @@ export enum ActionType {
   SetBzzContract,
   SetBzzBalance,
   SetBzzAllowance,
-  SetPostageBatchId,
+  SetBatchId,
   SetCurrentPage,
   SetTotalThreads,
   ResetThreads,
@@ -32,7 +31,7 @@ export enum ActionType {
   UpdateThreadByIndex,
   UpdateThreadByBzzhash,
   UpdateThreadByTxHash,
-  RemoveThreadByIndex
+  RemoveThreadByIndex,
 }
 
 export interface ThreadListDidMount {
@@ -59,7 +58,6 @@ export interface SetBzzContract {
   payload: {bzz: IERC20};
 }
 
-
 export interface SetBzzBalance {
   type: ActionType.SetBzzBalance;
   payload: {bzzBalance: BigNumber};
@@ -70,9 +68,9 @@ export interface SetBzzAllowance {
   payload: {bzzAllowance: BigNumber};
 }
 
-export interface SetPostageBatchId {
-  type: ActionType.SetPostageBatchId;
-  payload: {postageBatchId: string};
+export interface SetBatchId {
+  type: ActionType.SetBatchId;
+  payload: {batchId: BatchId};
 }
 
 export interface SetTotalThreads {
@@ -83,11 +81,6 @@ export interface SetTotalThreads {
 export interface SetCurrentPage {
   type: ActionType.SetCurrentPage;
   payload: {currentPage: number};
-}
-
-export interface AddEthRpcError {
-  type: ActionType.AddEthRpcError;
-  payload: {ethRpcError: SerializedEthereumRpcError};
 }
 
 export interface AddThreadIds {
@@ -118,7 +111,6 @@ export interface RemoveThreadTransaction {
   type: ActionType.RemoveThreadTransaction;
   payload: {txHash: string};
 }
-
 
 export interface AddThread {
   type: ActionType.AddThread;
@@ -180,10 +172,9 @@ export type AppAction =
   | SetBzzContract
   | SetBzzBalance
   | SetBzzAllowance
-  | SetPostageBatchId
+  | SetBatchId
   | SetCurrentPage
   | SetTotalThreads
-  | AddEthRpcError
   | RemoveThreadByIndex
   | AddThreadIds
   | ResetThreadIds

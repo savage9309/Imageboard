@@ -3,20 +3,16 @@ import { BigNumber, ContractTransaction, ethers } from 'ethers';
 import React, {useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { Address, Bee, PostageBatch } from '@ethersphere/bee-js';
 import { AppContext } from '../state/context';
-import { addCommentTransaction, addThread, getComment, sendComment, updateComment, updateThreadByIndex } from '../state/actionCreators';
+import { addCommentTransaction, addThread, getComment, sendComment, sendVote, updateComment, updateThreadByIndex } from '../state/actionCreators';
 import {IPostStruct, Comment, Status, VoteType, ICommentTransaction} from '../state/state'
 import makeBlockie from 'ethereum-blockies-base64';
-
-const beeUrl = "http://localhost:1633"
-
-const bee = new Bee(beeUrl)
 
 interface CommentItemProps {
   commentId: string
 }
 
-
 export default function CommentItem({ commentId }: CommentItemProps) {
+  const {swarm} = window
   const { account, library  } = useWeb3React()
   const { state, dispatch } = useContext(AppContext);
   const {comments} = state
@@ -26,6 +22,15 @@ export default function CommentItem({ commentId }: CommentItemProps) {
     dispatch(getComment(commentId))
   }, [commentId])
   
+
+  const [ bee, setBee ] = useState<Bee>()
+  useEffect(()=>{
+    if(!swarm) return
+    const { web2Helper } = swarm
+    const beeApi = web2Helper.fakeBeeApiAddress()
+    const bee = new Bee(beeApi);
+    setBee(bee)
+  },[swarm])
 
   const [localComment, setLocalComment] = useState<Comment>();
   const findComment = async () =>{
@@ -42,6 +47,7 @@ export default function CommentItem({ commentId }: CommentItemProps) {
   const [commentText, setCommentText ] = useState('')
   const downloadData = useCallback(async () => {
     if(!localComment) return false
+    if(!bee) return false
     try {
       const retrievedData = await bee.downloadData(localComment.bzzhash.replace('0x', ""))
       setCommentText(retrievedData.text())
@@ -55,52 +61,19 @@ export default function CommentItem({ commentId }: CommentItemProps) {
   }, [localComment])
 
 
-
-  // const [votes, setVotes ] = useState(0)
-
-  // useEffect(() => {
-  //   if(!localComment) return 
-  //   setVotes(localComment.totalUpVotes - localComment.totalDownVotes)
-
-  // }, [localComment])
-
-  // const vote = async (voteType: VoteType) =>{
-  //   if(!contract) throw Error("contract not ready");
-  //   if(!localComment) return false
-  //   try {
-  //     const signer = library.getSigner(account)
-  //     let tx: ContractTransaction
-  //     switch(voteType) {
-  //       case VoteType.Up:
-  //         tx = await contract.connect(signer).upVoteComment(localComment.bzzhash)
-  //         break;
-  //       case VoteType.Down:
-  //         tx = await contract.connect(signer).downVoteComment(localComment.bzzhash)
-  //         break;
-  //       default:
-  //         // code block
-  //     }
-  //   } catch (e) {
-  //     const error = serializeError(e)
-  //     const data: any = error.data
-  //     toast.error(data.message)
-  //   }
-  //   finally {
-      
-  //   }
-    
-  // }
-
   const handleUpVote = async (e: React.MouseEvent<HTMLElement>) => {
     e.preventDefault();
-    // vote(VoteType.Up)
+    if(!account) return false
+    if(!localComment) return false
+    dispatch(sendVote(account,library, localComment.id, VoteType.Up))
   };
 
   const handleDownVote = async (e: React.MouseEvent<HTMLElement>) => {
     e.preventDefault();
-    // vote(VoteType.Down)
+    if(!account) return false
+    if(!localComment) return false
+    dispatch(sendVote(account,library, localComment.id, VoteType.Down))
   };
-
 
   const [replyOpen, setReplyOpen ] = useState(false)
   const toggleReply = () => {
@@ -131,23 +104,23 @@ export default function CommentItem({ commentId }: CommentItemProps) {
 
       {localComment && 
         <>
-          {/* <div className="">
-            <button type="button" className="flex" onClick={handleUpVote} disabled={localComment.myVoteType !== VoteType.None}>
+          <div className="">
+            <button type="button" className="flex" onClick={handleUpVote} >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 stroke-zinc-900 dark:stroke-zinc-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </button>
-            <button type="button" className="flex" onClick={handleDownVote} disabled={localComment.myVoteType !== VoteType.None}>
+            <button type="button" className="flex" onClick={handleDownVote}>
               <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 stroke-zinc-900 dark:stroke-zinc-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </button>
-          </div> */}
+          </div>
 
           <div className="ml-3 overflow-hidden">
             <p className='text-sm font-medium text-gray-900 dark:text-zinc-100 whitespace-pre-wrap mb-3'>{commentText}</p>
             <div className='flex'>
-              <p className="text-sm mr-2 text-zinc-900 dark:text-zinc-100">{'votes'} Points</p>
+              <p className="text-sm mr-2 text-zinc-900 dark:text-zinc-100">{localComment.rating} Points</p>
               {localComment.owner && 
                 <img className='h-4 w-4 mr-1' alt={localComment.owner} src={makeBlockie(localComment.owner)} title={localComment.owner} /> 
               }

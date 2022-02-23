@@ -91,7 +91,7 @@ export default function ThreadDetails() {
               <img className='flex-1' src={imgSrc} />
             </div>
 
-            <div className='grid grid-cols-2 '>
+            {/* <div className='grid grid-cols-2 '>
                 <div className='col-span-1'>
                   <Link to={`/`}>
                     <div className=' w-20 bg-fuchsia-600 grid justify-center'>
@@ -111,7 +111,7 @@ export default function ThreadDetails() {
                     </div>
                   </Link>
                 </div>
-            </div>
+            </div> */}
 
 
             <div className='grid grid-cols-2 m-5'>
@@ -151,10 +151,6 @@ export default function ThreadDetails() {
                   </button>
                 </label>
               </form>
-
-              
-
-              
               {localThread.commentIds && 
                 <ul role="list" className="divide-y divide-zinc-300 dark:divide-zinc-800 m-5">
                   {localThread.commentIds.length}
@@ -163,9 +159,9 @@ export default function ThreadDetails() {
                   ))}
                 </ul>
               }
-
-
             </div>
+
+
           </>
         }
       </div>
