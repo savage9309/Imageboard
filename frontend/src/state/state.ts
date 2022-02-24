@@ -2,7 +2,7 @@ import {BigNumber, Contract} from 'ethers';
 import {Deployment} from 'hardhat-deploy/types';
 import {Log} from '@ethersproject/abstract-provider';
 import {Imageboard, IERC20} from '../hardhat/typechain';
-import { BatchId } from '@ethersphere/bee-js/dist/src/types';
+import {BatchId} from '@ethersphere/bee-js/dist/src/types';
 
 export enum Status {
   NotStarted = 'Not Started',
