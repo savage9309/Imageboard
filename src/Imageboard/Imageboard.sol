@@ -4,9 +4,16 @@ import "hardhat-deploy/solc_0.8/proxy/Proxied.sol";
 import "hardhat/console.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "@openzeppelin/contracts/utils/math/SafeMath.sol";
+import "../Libraries/AddrArrayLib.sol";
 
 contract Imageboard is Proxied {
+    using AddrArrayLib for AddrArrayLib.Addresses;
+    using SafeMath for uint256;
+    
     uint256 public bzzFee = 10**13;
+    
+    AddrArrayLib.Addresses userAddresses;
 
     ERC20 public bzzToken;
     bytes32[] private threadIds;
@@ -39,12 +46,8 @@ contract Imageboard is Proxied {
         PostType postType;
     }
 
-    function postUpgrade(address _bzzTokenAddress) public proxied {
-        bzzToken = ERC20(_bzzTokenAddress);
-    }
-
     constructor(address _bzzTokenAddress) {
-        postUpgrade(_bzzTokenAddress);
+        bzzToken = ERC20(_bzzTokenAddress);
     }
 
     function getPaginatedThreadIds(uint256 _page, uint256 _resultsPerPage)
@@ -88,8 +91,13 @@ contract Imageboard is Proxied {
 
     function createThread(bytes32 _threadBzzhash) public returns (bool succeed) {
         bytes32 threadId = keccak256(abi.encode(msg.sender, _threadBzzhash));
-        uint256 fee = getFee(msg.sender);
-        require(bzzToken.transferFrom(msg.sender, address(this), fee), "failed transfer");
+        
+        if(userAddresses.size() > 0){
+            uint256 fee = getFee(msg.sender);
+            address lotteryWinner = randomUser();
+            require(bzzToken.transferFrom(msg.sender, lotteryWinner, fee), "failed transfer");
+        }
+
         posts[threadId] = Post({
             id: threadId,
             index: threadIds.length,
@@ -104,6 +112,7 @@ contract Imageboard is Proxied {
         });
         threadIds.push(threadId);
         addressToThreadIds[msg.sender].push(threadId);
+        userAddresses.pushAddress(msg.sender);
         emit ThreadCreated(threadId);
         return true;
     }
@@ -127,8 +136,14 @@ contract Imageboard is Proxied {
         Post storage post = posts[_id];
         require(post.exists, "thread or comment doesn't exist");
         bytes32 commentId = keccak256(abi.encode(msg.sender, _commentBzzhash));
+
         uint256 fee = getFee(msg.sender);
-        require(bzzToken.transferFrom(msg.sender, address(this), fee), "failed transfer");
+        uint256 win = fee.div(2);
+        address postOwner = post.owner;
+        address lotteryWinner = randomUser();
+        require(bzzToken.transferFrom(msg.sender, lotteryWinner, win), "failed transfer");
+        require(bzzToken.transferFrom(msg.sender, postOwner, win), "failed transfer");
+
         posts[commentId] = Post({
             id: commentId,
             index: 0,
@@ -144,7 +159,7 @@ contract Imageboard is Proxied {
 
         post.commentIds.push(commentId);
         addressToCommentIds[msg.sender].push(commentId);
-
+        userAddresses.pushAddress(msg.sender);
         if (post.postType == PostType.COMMENT) {
             emit CommentUpdated(post.id);
         }
@@ -170,8 +185,14 @@ contract Imageboard is Proxied {
     function upVote(bytes32 _id) public returns (bool succeed) {
         Post storage post = posts[_id];
         require(post.exists, "thread or comment doesn't exist");
+
         uint256 fee = getFee(msg.sender);
-        require(bzzToken.transferFrom(msg.sender, address(this), fee), "failed transfer");
+        uint256 win = fee.div(2);
+        address postOwner = post.owner;
+        address lotteryWinner = randomUser();
+        require(bzzToken.transferFrom(msg.sender, lotteryWinner, win), "failed transfer");
+        require(bzzToken.transferFrom(msg.sender, postOwner, win), "failed transfer");
+
         post.rating++;
         addressToSocialScore[post.owner]++;
         if (post.postType == PostType.COMMENT) {
@@ -186,8 +207,14 @@ contract Imageboard is Proxied {
     function downVote(bytes32 _id) public returns (bool succeed) {
         Post storage post = posts[_id];
         require(post.exists, "thread or comment doesn't exist");
+        
         uint256 fee = getFee(msg.sender);
-        require(bzzToken.transferFrom(msg.sender, address(this), fee), "failed transfer");
+        uint256 win = fee.div(2);
+        address postOwner = post.owner;
+        address lotteryWinner = randomUser();
+        require(bzzToken.transferFrom(msg.sender, lotteryWinner, win), "failed transfer");
+        require(bzzToken.transferFrom(msg.sender, postOwner, win), "failed transfer");
+
         post.rating--;
         addressToSocialScore[post.owner]--;
         if (post.postType == PostType.COMMENT) {
@@ -226,4 +253,19 @@ contract Imageboard is Proxied {
             return 5;
         }
     }
+
+    function totalUsers() public view returns(uint256){
+        return userAddresses.size();
+    }
+
+    function randomUser() public view returns(address){
+        uint randomUserIndex = randomNumber(userAddresses.size());
+        address randomUserAddr = userAddresses.getAddressAtIndex(randomUserIndex);
+        return randomUserAddr;
+    }
+
+    function randomNumber(uint number) internal view returns(uint){
+        return uint(blockhash(block.number-1)) % number;
+    }
+
 }
