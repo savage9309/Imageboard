@@ -10,9 +10,9 @@ import "../Libraries/AddrArrayLib.sol";
 contract Imageboard is Proxied {
     using AddrArrayLib for AddrArrayLib.Addresses;
     using SafeMath for uint256;
-    
+
     uint256 public bzzFee = 10**13;
-    
+
     AddrArrayLib.Addresses userAddresses;
 
     ERC20 public bzzToken;
@@ -91,8 +91,8 @@ contract Imageboard is Proxied {
 
     function createThread(bytes32 _threadBzzhash) public returns (bool succeed) {
         bytes32 threadId = keccak256(abi.encode(msg.sender, _threadBzzhash));
-        
-        if(userAddresses.size() > 0){
+
+        if (userAddresses.size() > 0) {
             uint256 fee = getFee(msg.sender);
             address lotteryWinner = randomUser();
             require(bzzToken.transferFrom(msg.sender, lotteryWinner, fee), "failed transfer");
@@ -207,7 +207,7 @@ contract Imageboard is Proxied {
     function downVote(bytes32 _id) public returns (bool succeed) {
         Post storage post = posts[_id];
         require(post.exists, "thread or comment doesn't exist");
-        
+
         uint256 fee = getFee(msg.sender);
         uint256 win = fee.div(2);
         address postOwner = post.owner;
@@ -254,18 +254,17 @@ contract Imageboard is Proxied {
         }
     }
 
-    function totalUsers() public view returns(uint256){
+    function totalUsers() public view returns (uint256) {
         return userAddresses.size();
     }
 
-    function randomUser() public view returns(address){
-        uint randomUserIndex = randomNumber(userAddresses.size());
+    function randomUser() public view returns (address) {
+        uint256 randomUserIndex = randomNumber(userAddresses.size());
         address randomUserAddr = userAddresses.getAddressAtIndex(randomUserIndex);
         return randomUserAddr;
     }
 
-    function randomNumber(uint number) internal view returns(uint){
-        return uint(blockhash(block.number-1)) % number;
+    function randomNumber(uint256 number) internal view returns (uint256) {
+        return uint256(blockhash(block.number - 1)) % number;
     }
-
 }

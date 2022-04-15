@@ -42,13 +42,13 @@ describe('Imageboard', function () {
   });
 
   it('should create a Thread', async () => {
-    const {alice, users,Imageboard, bytes32Strings} = await setup();
+    const {alice, users, Imageboard, bytes32Strings} = await setup();
     await alice.BZZ.approve(Imageboard.address, parseUnits('0.02', 16));
 
     const threadTx = alice.Imageboard.createThread(bytes32Strings[0]);
     expect(await users[2].Imageboard.totalUsers()).to.equal(1);
-    expect(await users[2].Imageboard.randomUser()).to.equal(alice.address); // there is only on user 
-    
+    expect(await users[2].Imageboard.randomUser()).to.equal(alice.address); // there is only on user
+
     await expect(threadTx).to.emit(Imageboard, 'ThreadCreated');
     expect(await alice.Imageboard.getTotalThreads()).to.equal(1);
   });
@@ -57,7 +57,7 @@ describe('Imageboard', function () {
     const {alice, users, Imageboard, bytes32Strings} = await setup();
 
     await alice.BZZ.approve(Imageboard.address, parseUnits('0.02', 16));
-    
+
     const thread0Tx = await alice.Imageboard.createThread(bytes32Strings[0]);
     const thread1Tx = await alice.Imageboard.createThread(bytes32Strings[1]);
     expect(await users[3].Imageboard.getTotalThreads()).to.equal(2);
@@ -115,7 +115,7 @@ describe('Imageboard', function () {
 
     await bob.Imageboard.createComment(threadIds[0], bytes32Strings[1]);
     expect(await users[2].Imageboard.totalUsers()).to.equal(2);
-    //expect(await users[2].Imageboard.randomUser()).to.equal(alice.address); // testing randomness works only with fixed blocknumber 
+    //expect(await users[2].Imageboard.randomUser()).to.equal(alice.address); // testing randomness works only with fixed blocknumber
 
     const thread = await users[2].Imageboard.getThread(threadIds[0]);
     const commentId = thread.commentIds[0];
@@ -276,13 +276,11 @@ describe('Imageboard', function () {
     expect(await users[0].BZZ.balanceOf(bob.address)).to.equal(parseUnits('0.197', 16));
     expect(await users[0].BZZ.balanceOf(carol.address)).to.equal(parseUnits('0.3', 16));
 
-
     await carol.Imageboard.createComment(threadId, bytes32Strings[2]);
-    // testing randomness works only with fixed blocknumber 
+    // testing randomness works only with fixed blocknumber
     // expect(await users[0].BZZ.balanceOf(alice.address)).to.equal(parseUnits('0.106', 16)); // '0.1045'
     // expect(await users[0].BZZ.balanceOf(bob.address)).to.equal(parseUnits('0.1985', 16));
     // expect(await users[0].BZZ.balanceOf(carol.address)).to.equal(parseUnits('0.297', 16));
-
 
     await alice.Imageboard.createComment(threadId, bytes32Strings[3]);
     expect(await users[2].Imageboard.totalUsers()).to.equal(3);
