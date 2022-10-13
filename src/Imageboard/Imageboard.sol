@@ -1,5 +1,5 @@
 //SPDX-License-Identifier: Unlicense
-pragma solidity 0.8.9;
+pragma solidity 0.8.17;
 import "hardhat-deploy/solc_0.8/proxy/Proxied.sol";
 import "hardhat/console.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";

@@ -2,7 +2,7 @@ import {BigNumber, Contract} from 'ethers';
 import {Deployment} from 'hardhat-deploy/types';
 import {Log} from '@ethersproject/abstract-provider';
 import {Imageboard, IERC20} from '../hardhat/typechain';
-import {BatchId} from '@ethersphere/bee-js/dist/src/types';
+import { BatchId } from '@ethersphere/bee-js';
 
 export enum Status {
   NotStarted = 'Not Started',
@@ -109,6 +109,7 @@ export interface AppState {
   currentPage?: number;
   imageboardDeployment?: DeploymentLite;
   imageboard?: Imageboard;
+  coinBalance?: BigNumber;
   bzzDeployment?: DeploymentLite;
   bzz?: IERC20;
   bzzBalance?: BigNumber;

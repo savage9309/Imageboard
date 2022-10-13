@@ -8,13 +8,14 @@ import ThreadList from './ThreadList';
 import ThreadDetails from './ThreadDetails';
 import React from 'react';
 import Nav from './Nav';
-import { getBzzContract, getImageboardContract, getDeployments, getBzzBalance, getBzzAllowance, getAllPostageBatch } from '../state/actionCreators';
+import { getBzzContract, getImageboardContract, getDeployments, getCoinBalance, getBzzBalance, getBzzAllowance, getAllPostageBatch, setChainId } from '../state/actionCreators';
 import { ConnectWallet, useWallet } from '@web3-ui/core';
 import useEagerConnect from '../hooks/useEagerConnect';
 import useInactiveListener from '../hooks/useInactiveListener';
 import useThreadCreatedEvent from '../hooks/useThreadCreatedEvent';
 import useThreadUpdatedEvent from '../hooks/useThreadUpdatedEvent';
 import useCommentUpdatedEvent from '../hooks/useCommentUpdatedEvent';
+import Modal from './Modal';
 
 
 
@@ -45,6 +46,7 @@ export default function Imageboard() {
   useEffect(()=>{
     if(!chainId) return
     if(!library) return
+    dispatch(setChainId(chainId))
     dispatch(getDeployments(library, chainId))
   }, [chainId])
 
@@ -54,6 +56,11 @@ export default function Imageboard() {
     dispatch(getBzzContract(library))
   }, [imageboardDeployment])
 
+  useEffect(()=>{ 
+    if(!library) return
+    if(!account) return
+    dispatch(getCoinBalance(account, library))
+  }, [account, library])
 
   useEffect(()=>{ 
     if(!account) return
@@ -133,16 +140,14 @@ export default function Imageboard() {
 
   return(
     <div>
-      {!!error && <ErrorMessage/>}
-      {!error &&
         <>
+          <Modal />
           <Nav />
           <Routes>
             <Route path="/" element={<ThreadList/>} />
             <Route path="/post/:threadId" element={<ThreadDetails/>} />
           </Routes>
         </>
-      } 
     </div>
     )
 }

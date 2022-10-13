@@ -24,6 +24,12 @@ export function appReducer(state: AppState, action: AppAction): AppState {
     case ActionType.SetBatchId:
       return {...state, ...action.payload};
 
+    case ActionType.SetChainId:
+      return {...state, ...action.payload};
+
+      case ActionType.SetCoinBalance:
+        return {...state, ...action.payload};
+
     case ActionType.SetCurrentPage:
       return {...state, ...action.payload};
 

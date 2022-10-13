@@ -28,8 +28,10 @@ import {
   SetImageboardContract,
   SetBzzContract,
   SetBzzBalance,
+  SetCoinBalance,
   SetBzzAllowance,
   SetBatchId,
+  SetChainId,
 } from './actions';
 import {
   AppState,
@@ -105,10 +107,26 @@ export const setBzzContract = (bzz: IERC20): SetBzzContract => ({
   payload: {bzz},
 });
 
+export const getCoinBalance = (address: string, library: Web3Provider) => async (dispatch: React.Dispatch<AppAction>, state: AppState) => {
+  const coinBalance: BigNumber = await library.getBalance(address);
+  dispatch(setCoinBalance(coinBalance));
+};
+
+export const setCoinBalance = (coinBalance: BigNumber): SetCoinBalance => ({
+  type: ActionType.SetCoinBalance,
+  payload: {coinBalance},
+});
+
+export const setChainId = (chainId: Number): SetChainId => ({
+  type: ActionType.SetChainId,
+  payload: {chainId},
+});
+
 export const getBzzBalance = (address: string) => async (dispatch: React.Dispatch<AppAction>, state: AppState) => {
   const {bzz} = state;
   if (!bzz) return false;
   const bzzBalance: BigNumber = await bzz.balanceOf(address);
+  console.log(bzzBalance)
   dispatch(setBzzBalance(bzzBalance));
 };
 
@@ -131,8 +149,7 @@ export const setBzzAllowance = (bzzAllowance: BigNumber): SetBzzAllowance => ({
   payload: {bzzAllowance},
 });
 
-export const sendBzzApprove =
-  (account: string, library: Web3Provider, amount: BigNumberish) =>
+export const sendBzzApprove = (account: string, library: Web3Provider, amount: BigNumberish) =>
   async (dispatch: React.Dispatch<AppAction>, state: AppState) => {
     const {bzz, imageboardDeployment} = state;
     if (!imageboardDeployment) return false;

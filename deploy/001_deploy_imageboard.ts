@@ -13,7 +13,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   await deploy('Imageboard', {
     from: deployer,
     args: [xBzzContractAddress],
-    proxy: useProxy && 'postUpgrade',
+    //proxy: useProxy && 'postUpgrade',
     log: true,
     autoMine: true, // speed up deployment on local network (ganache, hardhat), no effect on live networks
   });

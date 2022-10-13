@@ -9,8 +9,8 @@ const setup = deployments.createFixture(async () => {
   await deployments.fixture('PostageStamp');
   const {alice} = await getNamedAccounts();
   const contracts = {
-    PostageStamp: <Contract>await ethers.getContract('PostageStamp'),
-    BZZ: <IERC20>await ethers.getContract('BZZ'),
+    PostageStamp: await ethers.getContract('PostageStamp'),
+    BZZ: await ethers.getContract('BZZ'),
   };
   const users = await setupUsers(await getUnnamedAccounts(), contracts);
   return {

@@ -10,8 +10,8 @@ const setup = deployments.createFixture(async () => {
   await deployments.fixture('Imageboard');
   const timeNow = Math.floor(new Date().getTime() / 1000);
   const contracts = {
-    Imageboard: <Imageboard>await ethers.getContract('Imageboard'),
-    BZZ: <IERC20>await ethers.getContract('BZZ'),
+    Imageboard: await ethers.getContract('Imageboard'),
+    BZZ: await ethers.getContract('BZZ'),
   };
   const {deployer, alice, bob, carol, dave} = await getNamedAccounts();
 

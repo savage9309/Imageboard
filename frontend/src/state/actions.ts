@@ -14,6 +14,8 @@ export enum ActionType {
   UpdateCommentByBzzhash,
   SetImageboardDeployment,
   SetImageboardContract,
+  SetChainId,
+  SetCoinBalance,
   SetBzzDeployment,
   SetBzzContract,
   SetBzzBalance,
@@ -48,6 +50,14 @@ export interface SetImageboardContract {
   payload: {imageboard: Imageboard};
 }
 
+export interface SetChainId {
+  type: ActionType.SetChainId;
+  payload: {chainId: Number};
+}
+export interface SetCoinBalance {
+  type: ActionType.SetCoinBalance;
+  payload: {coinBalance: BigNumber};
+}
 export interface SetBzzDeployment {
   type: ActionType.SetBzzDeployment;
   payload: {bzzDeployment: DeploymentLite};
@@ -168,6 +178,8 @@ export type AppAction =
   | UpdateCommentByBzzhash
   | SetImageboardDeployment
   | SetImageboardContract
+  | SetChainId
+  | SetCoinBalance
   | SetBzzDeployment
   | SetBzzContract
   | SetBzzBalance

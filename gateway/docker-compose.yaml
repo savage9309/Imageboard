@@ -3,7 +3,7 @@ version: '3.9'
 services:
 
   clef:
-    image: ethersphere/clef:0.10.0
+    image: ethersphere/clef:0.13.1
     command: full
     restart: unless-stopped
     environment:
@@ -13,7 +13,7 @@ services:
 
 
   bee:
-    image: ethersphere/bee:latest
+    image: ethersphere/bee:1.8.2
     command: start
     restart: unless-stopped
     environment:
@@ -47,7 +47,7 @@ services:
       - BEE_POSTAGE_STAMP_ADDRESS
       - BEE_RESOLVER_OPTIONS
       - BEE_SWAP_ENABLE
-      - BEE_SWAP_ENDPOINT=https://dai.poa.network
+      - BEE_SWAP_ENDPOINT=https://xdai.fairdatasociety.org
       - BEE_SWAP_FACTORY_ADDRESS
       - BEE_SWAP_LEGACY_FACTORY_ADDRESSES
       - BEE_SWAP_INITIAL_DEPOSIT
