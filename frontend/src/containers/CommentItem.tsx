@@ -139,12 +139,12 @@ export default function CommentItem({ commentId }: CommentItemProps) {
                   <form onSubmit={submitForm} className='m-4 block'>
                     <label className="block">
                       <textarea 
-                        className="mt-1 block w-full mb-2 dark:bg-zinc-900 dark:text-slate-100 focus:border-fuchsia-600" 
+                        className="mt-1 block w-full mb-2 dark:bg-zinc-900 dark:text-slate-100 focus:border-pink-600" 
                         value={newComment}
                         onChange={(e) => setNewComment(e.target.value)}
                         placeholder={'write a comment'}
                       />
-                      <button type="submit" className='px-3 py-2 bg-fuchsia-600 dark:text-indigo-50' >
+                      <button type="submit" className='px-3 py-2 bg-pink-600 dark:text-indigo-50' >
                         Save Comment
                       </button>
                     </label>

@@ -2,10 +2,41 @@ import {Imageboard, IERC20} from '../hardhat/typechain';
 
 import {BigNumber, Contract} from 'ethers';
 import {Thread, Comment, DeploymentLite, ICommentTransaction, IThreadTransaction} from './state';
-import {BatchId} from '@ethersphere/bee-js';
+import {BatchId, Topology, PostageBatch} from '@ethersphere/bee-js';
+
+export type AppAction =
+  | ThreadListDidMount
+  | AddCommentTransaction
+  | AddComment
+  | AddComments
+  | UpdateComment
+  | UpdateCommentByBzzhash
+  | SetImageboardDeployment
+  | SetImageboardContract
+  | SetChainId
+  | SetCoinBalance
+  | SetBzzDeployment
+  | SetBzzContract
+  | SetBzzBalance
+  | SetBzzAllowance
+  | SetBatchId
+  | SetCurrentPage
+  | SetTotalThreads
+  | RemoveThreadByIndex
+  | AddThreadIds
+  | ResetThreadIds
+  | AddThreadTransaction
+  | RemoveThreadTransaction
+  | AddThread
+  | AddThreads
+  | ResetThreads
+  | UpdateThreadByTxHash
+  | UpdateThreadByBzzhash
+  | UpdateThreadByIndex
+  | SetSwarmTopology
+  | SetAllPostageBatch;
 
 export enum ActionType {
-  AddEthRpcError,
   ThreadListDidMount,
   AddCommentTransaction,
   AddComment,
@@ -34,6 +65,8 @@ export enum ActionType {
   UpdateThreadByBzzhash,
   UpdateThreadByTxHash,
   RemoveThreadByIndex,
+  SetSwarmTopology,
+  SetAllPostageBatch,
 }
 
 export interface ThreadListDidMount {
@@ -81,6 +114,11 @@ export interface SetBzzAllowance {
 export interface SetBatchId {
   type: ActionType.SetBatchId;
   payload: {batchId: BatchId};
+}
+
+export interface SetAllPostageBatch {
+  type: ActionType.SetAllPostageBatch;
+  payload: {allPostageBatch: PostageBatch[]};
 }
 
 export interface SetTotalThreads {
@@ -169,32 +207,8 @@ export interface UpdateCommentByBzzhash {
   payload: {comment: Comment};
 }
 
-export type AppAction =
-  | ThreadListDidMount
-  | AddCommentTransaction
-  | AddComment
-  | AddComments
-  | UpdateComment
-  | UpdateCommentByBzzhash
-  | SetImageboardDeployment
-  | SetImageboardContract
-  | SetChainId
-  | SetCoinBalance
-  | SetBzzDeployment
-  | SetBzzContract
-  | SetBzzBalance
-  | SetBzzAllowance
-  | SetBatchId
-  | SetCurrentPage
-  | SetTotalThreads
-  | RemoveThreadByIndex
-  | AddThreadIds
-  | ResetThreadIds
-  | AddThreadTransaction
-  | RemoveThreadTransaction
-  | AddThread
-  | AddThreads
-  | ResetThreads
-  | UpdateThreadByTxHash
-  | UpdateThreadByBzzhash
-  | UpdateThreadByIndex;
+export interface SetSwarmTopology{
+  type: ActionType.SetSwarmTopology;
+  payload: {swarmTopology: Topology};
+}
+

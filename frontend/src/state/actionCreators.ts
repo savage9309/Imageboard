@@ -1,7 +1,7 @@
 import {BigNumber, BigNumberish, Contract, ContractTransaction, ethers} from 'ethers';
 import {IERC20, Imageboard} from '../hardhat/typechain';
 import {Web3Provider} from '@ethersproject/providers';
-import {BatchId, Bee, BeeDebug, DebugPostageBatch, FileUploadOptions, PostageBatch, Tag} from '@ethersphere/bee-js';
+import {BatchId, Bee, BeeDebug, FileUploadOptions, PostageBatch, Tag, Topology} from '@ethersphere/bee-js';
 import {BytesLike, defaultAbiCoder, formatBytes32String, hexStripZeros, keccak256, parseUnits} from 'ethers/lib/utils';
 import {
   ActionType,
@@ -32,6 +32,8 @@ import {
   SetBzzAllowance,
   SetBatchId,
   SetChainId,
+  SetSwarmTopology,
+  SetAllPostageBatch,
 } from './actions';
 import {
   AppState,
@@ -126,7 +128,6 @@ export const getBzzBalance = (address: string) => async (dispatch: React.Dispatc
   const {bzz} = state;
   if (!bzz) return false;
   const bzzBalance: BigNumber = await bzz.balanceOf(address);
-  console.log(bzzBalance)
   dispatch(setBzzBalance(bzzBalance));
 };
 
@@ -149,32 +150,60 @@ export const setBzzAllowance = (bzzAllowance: BigNumber): SetBzzAllowance => ({
   payload: {bzzAllowance},
 });
 
-export const sendBzzApprove = (account: string, library: Web3Provider, amount: BigNumberish) =>
-  async (dispatch: React.Dispatch<AppAction>, state: AppState) => {
+export const sendBzzApprove = (account: string, library: Web3Provider, amount: BigNumberish) => async (dispatch: React.Dispatch<AppAction>, state: AppState) => {
     const {bzz, imageboardDeployment} = state;
     if (!imageboardDeployment) return false;
     if (!bzz) return false;
     try {
       const signer = library.getSigner(account);
       const tx: ContractTransaction = await bzz.connect(signer).approve(imageboardDeployment.address, amount);
-      console.log();
       await tx.wait();
     } catch (error) {
       console.error(error);
     }
-  };
+};
 
-export const getAllPostageBatch = () => async (dispatch: React.Dispatch<AppAction>, state: AppState) => {
+export const getSwarmTopology = () => async (dispatch: React.Dispatch<AppAction>, state: AppState) => {
   if (!beeDebug) return false;
   try {
-    const postageBatchs: PostageBatch[] = await beeDebug.getAllPostageBatch();
-    const postageBatch: PostageBatch = postageBatchs[0];
-    const batchId: BatchId = postageBatch.batchID;
+    const swarmTopology: Topology = await beeDebug.getTopology()
+    dispatch(setSwarmTopology(swarmTopology));
+  } catch (error) {
+    toast.error(`${error} check the Ethereum Swarm Extension`);
+  }
+};
+
+export const setSwarmTopology = (swarmTopology: Topology): SetSwarmTopology => ({
+  type: ActionType.SetSwarmTopology,
+  payload: {swarmTopology},
+});
+
+export const createPostageBatch = () => async (dispatch: React.Dispatch<AppAction>, state: AppState) => {
+  if (!beeDebug) return false;
+  try {
+    const batchId: BatchId =  await beeDebug.createPostageBatch("100000000", 20)
+    console.log(batchId)
     dispatch(setBatchId(batchId));
   } catch (error) {
     toast.error(`${error} check the Ethereum Swarm Extension`);
   }
 };
+
+export const getAllPostageBatch = () => async (dispatch: React.Dispatch<AppAction>, state: AppState) => {
+  if (!beeDebug) return false;
+  try {
+    const allPostageBatch: PostageBatch[] = await beeDebug.getAllPostageBatch();
+    dispatch(setAllPostageBatch(allPostageBatch));
+  } catch (error) {
+    toast.error(`${error} check the Ethereum Swarm Extension`);
+  }
+};
+
+export const setAllPostageBatch = (allPostageBatch: PostageBatch[]): SetAllPostageBatch => ({
+  type: ActionType.SetAllPostageBatch,
+  payload: {allPostageBatch},
+});
+
 
 export const setBatchId = (batchId: BatchId): SetBatchId => ({
   type: ActionType.SetBatchId,
@@ -256,9 +285,7 @@ export const getAndUpdateThreadById = (id: string) => async (dispatch: React.Dis
   }
 };
 
-export const sendThread =
-  (account: string, library: Web3Provider, bzzhash: string) =>
-  async (dispatch: React.Dispatch<AppAction>, state: AppState) => {
+export const sendThread = (account: string, library: Web3Provider, bzzhash: string) => async (dispatch: React.Dispatch<AppAction>, state: AppState) => {
     const {imageboard} = state;
     if (!imageboard) return false;
     try {

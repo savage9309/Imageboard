@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@ethersphere/bee-js": "^3.2.0",
+    "@ethersphere/bee-js": "^6.0.0-pre.0",
     "@ethersproject/abstract-provider": "^5.5.1",
     "@headlessui/react": "^1.4.2",
     "@tailwindcss/forms": "^0.4.0",

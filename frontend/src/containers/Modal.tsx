@@ -1,29 +1,21 @@
-import { IBaseThread, Thread } from '../state/state'
-import { UnsupportedChainIdError, useWeb3React } from '@web3-react/core';
-
-import { Link } from 'react-router-dom';
+import { useWeb3React } from '@web3-react/core';
 import { useContext, useEffect, useState } from 'react';
 import { AppContext } from '../state/context';
-import { getAndAddThreadById } from '../state/actionCreators';
-import { formatUnits } from 'ethers/lib/utils';
+import { createPostageBatch, sendBzzApprove } from '../state/actionCreators';
+import { parseUnits } from 'ethers/lib/utils';
 
+interface ModalProps {
+    handleClose: React.MouseEventHandler<HTMLButtonElement>
+  }
 
-export default function Modal() {
+export default function Modal({ handleClose }: ModalProps) {
+
     const { swarm } = window
     const { connector, activate, error, library, chainId, account, active } = useWeb3React()
 
     const { state, dispatch } = useContext(AppContext);
-    const { coinBalance, bzzBalance, bzzAllowance } = state
+    const { coinBalance, bzzBalance, bzzAllowance, swarmTopology, batchId, allPostageBatch } = state
 
-    const [checkChain, setCheckChain] = useState(false)
-    useEffect(() => {
-        if(!chainId) return;
-
-        if (error instanceof UnsupportedChainIdError) return;
-
-        setCheckChain(true)
-
-    }, [chainId])
 
     const [checkCoinBalance, setCheckCoinBalance] = useState(false)
     useEffect(() => {
@@ -36,9 +28,10 @@ export default function Modal() {
         }
     }, [coinBalance])
 
+
+
     const [checkBzzBalance, setCheckBzzBalance] = useState(false)
     useEffect(() => {
-        console.log(bzzBalance)
         if (bzzBalance) {
             if (bzzBalance.isZero()) {
                 setCheckBzzBalance(false)
@@ -49,6 +42,7 @@ export default function Modal() {
     }, [bzzBalance])
 
 
+
     const [checkSwarm, setCheckSwarm] = useState(false)
     useEffect(() => {
         if(!swarm) return
@@ -56,35 +50,36 @@ export default function Modal() {
     }, [swarm])
 
 
+
     const [checkSwarmConnect, setCheckSwarmConnect] = useState(false)
     useEffect(() => {
-        if (swarm) {
-            setCheckSwarmConnect(true)
-        }
-    }, [swarm])
+        if (!swarm) return 
+        if (!swarmTopology) return
+        const connected = swarmTopology.connected > 0
+        setCheckSwarmConnect(connected)
+    }, [swarm, swarmTopology])
+
 
 
     const [checkPostageStamp, setCheckPostageStamp] = useState(false)
     useEffect(() => {
-        if (swarm) {
-            setCheckPostageStamp(true)
-        }
-    }, [swarm])
+        if(!allPostageBatch) return
+        setCheckPostageStamp(allPostageBatch.length > 0)
+    }, [allPostageBatch])
 
-    
+
+
     const [checkBzzAllowance, setCheckBzzAllowance] = useState(false)
     useEffect(() => {
-        if (swarm) {
-            setCheckPostageStamp(true)
-        }
-    }, [swarm])
+        if (!swarm) return
+        if (!bzzAllowance) return
+        const allowance = bzzAllowance.toNumber()
+        setCheckBzzAllowance(allowance > 0)
+    }, [swarm, bzzAllowance])
 
     
 
-    const [checkDAppConnection, setCheckDAppConnection] = useState(false)
-    useEffect(() => {
-        setCheckDAppConnection(active)
-    }, [active])
+
 
 
     const IconCheck = () : JSX.Element => {
@@ -103,14 +98,21 @@ export default function Modal() {
         )
     }
 
-    const ListItem = ({ msg, checked } : {msg: string, checked: boolean}) : JSX.Element => {
-        return (
-            <li className="px-3 py-2 border-b border-gray-200 w-full rounded-t-lg flex">
-                <div className="px-1">{checked ? <IconCheck/> : <IconX/> }</div>
-                {msg}
-            </li>
-        )
+
+    const handleBzzApprove = async (e: React.MouseEvent<HTMLElement>) => {
+        if(!account) return 
+        if(!library) return 
+        const amount = parseUnits('0.1', 16)
+        dispatch(sendBzzApprove(account, library, amount))
     }
+
+    const handleCreatePostageBatch = async (e: React.MouseEvent<HTMLElement>) => {
+        if(!account) return 
+        if(!library) return 
+        dispatch(createPostageBatch())
+    }
+
+
 
     return (
         <div className="relative z-10" aria-labelledby="modal-title" role="dialog" aria-modal="true">
@@ -135,14 +137,159 @@ export default function Modal() {
 
                                     <div className="flex justify-center">
                                         <ul className="bg-white rounded-lg border border-gray-200 w-96 text-gray-900">
-                                            <ListItem checked={checkChain} msg={checkChain ? 'Wallet is connected to the Gnosis Chain' : 'Wallet is not connected to the Gnosis Chain'} />
-                                            <ListItem checked={checkDAppConnection} msg={checkDAppConnection ? 'Wallet is connected to dApp' : 'Wallet is not connected to dApp'} />
-                                            <ListItem checked={checkCoinBalance} msg={checkCoinBalance ?  `Wallet is fundet with xDAI` : 'Wallet is not fundet with xDAI'} />
-                                            <ListItem checked={checkBzzBalance} msg={checkBzzBalance ? `Wallet is fundet with xBZZ` : 'Wallet is not fundet with xBZZ'} />
-                                            <ListItem checked={checkBzzAllowance} msg={checkBzzAllowance ? "dApp has allowance to spend xBZZ" : "dApp has no allowance to spend xBZZ"} />
-                                            <ListItem checked={swarm} msg={swarm ? "Swarm is Installed" : "Swarm is not Installed"} />
-                                            <ListItem checked={checkSwarmConnect} msg={checkSwarmConnect ? "Swarm is Connected to Swarm Desktop" : "Swarm is not Connected to Swarm Desktop"} />
-                                            <ListItem checked={checkPostageStamp} msg={checkPostageStamp ? "Swarm has PostageStamp" : "no PostageStamp found"} />
+
+                                            <li className="px-3 py-2 border-b border-gray-200 w-full rounded-t-lg flex">    
+                                                {active ? (
+                                                    <>
+                                                        <div className="px-1">
+                                                            <IconCheck/>
+                                                        </div>
+                                                        <p>Wallet is connected to the Gnosis Chain</p>
+                                                    </>
+                                                ) : (
+                                                    <div className='box'>
+                                                        <div  className='flex'>
+                                                            <div className="px-1"><IconX/></div>
+                                                            <p>Wallet is not connected to the Gnosis Chain</p>
+                                                        </div>
+                                                        <p className="font-small text-gray-700 dark:text-gray-400">
+                                                            This DApp is currenly only available on <a target="_blank" href="https://docs.gnosischain.com/">Gnosis Chain</a>. please go to <a target="_blank" href="https://chainlist.org" className='underline'>chainlist.org</a> and search for gnosis, Click Connect Wallet, Add to Metamask, and Switch network.
+                                                        </p>
+                                                    </div>
+                                                )}
+                                            </li>
+
+                                            <li className="px-3 py-2 border-b border-gray-200 w-full rounded-t-lg flex">    
+                                                {checkCoinBalance ? (
+                                                    <>
+                                                        <div className="px-1">
+                                                            <IconCheck/>
+                                                        </div>
+                                                        <p>Wallet is fundet with xDAI</p>
+                                                    </>
+                                                ) : (
+                                                    <div className='box'>
+                                                        <div  className='flex'>
+                                                            <div className="px-1"><IconX/></div>
+                                                            <p>Wallet is not fundet with xDAI</p>
+                                                        </div>
+                                                        <p className="font-small text-gray-700 dark:text-gray-400">
+                                                            To make transactions on the Gnosis Chain you need xDAI. please go to <a target="_blank" href="https://ramp.network/buy/" className='underline'>ramp.network</a> and search for xdai and buy some coins. not much is needed, like 3 xDAI.
+                                                        </p>
+                                                    </div>
+                                                )}
+                                            </li>
+
+
+                                            <li className="px-3 py-2 border-b border-gray-200 w-full rounded-t-lg flex">    
+                                                {checkBzzBalance ? (
+                                                    <>
+                                                        <div className="px-1">
+                                                            <IconCheck/>
+                                                        </div>
+                                                        <p>Wallet is fundet with xBZZ</p>
+                                                    </>
+                                                ) : (
+                                                    <div className='box'>
+                                                        <div  className='flex'>
+                                                            <div className="px-1"><IconX/></div>
+                                                            <p>Wallet is not fundet with xBZZ</p>
+                                                        </div>
+                                                        <p className="font-small text-gray-700 dark:text-gray-400">
+                                                            This dApp is using xBZZ as a incentive token. to encourage good content and penalize bad content. please go to <a target="_blank" href="https://honeyswap.org/" className='underline'>honeyswap.org</a> and swap some xDAI for some xBZZ. not much is needed, like 1 BZZ.
+                                                        </p>
+                                                    </div>
+                                                )}
+                                            </li>
+
+
+
+                                            <li className="px-3 py-2 border-b border-gray-200 w-full rounded-t-lg flex">    
+                                                {checkBzzAllowance ? (
+                                                    <>
+                                                        <div className="px-1">
+                                                            <IconCheck/>
+                                                        </div>
+                                                        <p>This dApp has allowance to spend xBZZ</p>
+                                                    </>
+                                                ) : (
+                                                    <div className='box'>
+                                                        <div  className='flex'>
+                                                            <div className="px-1"><IconX/></div>
+                                                            <p>This dApp has no allowance to spend xBZZ</p>
+                                                        </div>
+                                                        <p className="font-small text-gray-700 dark:text-gray-400">
+                                                            Please allow this dApp to use your xBZZ. <a onClick={handleBzzApprove} className='underline'>Give permission</a>.
+                                                        </p>
+                                                    </div>
+                                                )}
+                                            </li>
+
+
+                                            <li className="px-3 py-2 border-b border-gray-200 w-full rounded-t-lg flex">    
+                                                {swarm ? (
+                                                    <>
+                                                        <div className="px-1">
+                                                            <IconCheck/>
+                                                        </div>
+                                                        <p>Swarm Browser Extension is Installed</p>
+                                                    </>
+                                                ) : (
+                                                    <div className='box'>
+                                                        <div  className='flex'>
+                                                            <div className="px-1"><IconX/></div>
+                                                            <p>Swarm Browser Extension is not Installed</p>
+                                                        </div>
+                                                        <p className="font-small text-gray-700 dark:text-gray-400">
+                                                            This dApp is using Ethereum Swarm as a decentralize storage. please go to <a target="_blank" href="https://chrome.google.com/webstore/detail/ethereum-swarm-extension/afpgelfcknfbbfnipnomfdbbnbbemnia?hl=en" className='underline'>chrome webstore</a> and Install the browser Extension.
+                                                        </p>
+                                                    </div>
+                                                )}
+                                            </li>
+
+
+                                            <li className="px-3 py-2 border-b border-gray-200 w-full rounded-t-lg flex">    
+                                                {checkSwarmConnect ? (
+                                                    <>
+                                                        <div className="px-1">
+                                                            <IconCheck/>
+                                                        </div>
+                                                        <p>Swarm Browser Extension is Connected</p>
+                                                    </>
+                                                ) : (
+                                                    <div className='box'>
+                                                        <div  className='flex'>
+                                                            <div className="px-1"><IconX/></div>
+                                                            <p>Swarm Browser Extension is not Connected</p>
+                                                        </div>
+                                                        <p className="font-small text-gray-700 dark:text-gray-400">
+                                                            The Swarm Extension cannot connect to Swarm-Desktop. please go to <a target="_blank" href="https://www.ethswarm.org/build/desktop" className='underline'>ethswarm.org</a> and Install the Swarm-Desktop App to connect to the Swarm-Network.
+                                                        </p>
+                                                    </div>
+                                                )}
+                                            </li>
+
+                                            <li className="px-3 py-2 border-b border-gray-200 w-full rounded-t-lg flex">    
+                                                {batchId ? (
+                                                    <>
+                                                        <div className="px-1">
+                                                            <IconCheck/>
+                                                        </div>
+                                                        <p>Swarm has PostageStamps</p>
+                                                    </>
+                                                ) : (
+                                                    <div className='box'>
+                                                        <div  className='flex'>
+                                                            <div className="px-1"><IconX/></div>
+                                                            <p>no PostageStamps found</p>
+                                                        </div>
+                                                        <p className="font-small text-gray-700 dark:text-gray-400">
+                                                            The Swarm Extension did not find any PostageStamps. please click <a onClick={handleCreatePostageBatch} className='underline'>here</a> to create a PostageStamp. 
+                                                        </p>
+                                                    </div>
+                                                )}
+                                            </li>
+
                                         </ul>
                                     </div>
                                 </div>
@@ -151,8 +298,9 @@ export default function Modal() {
                         </div>
 
                         <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-                            <button type="button" className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm">Deactivate</button>
-                            <button type="button" className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">Cancel</button>
+                            <button type="button" onClick={handleClose} className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                                Start
+                            </button>
                         </div>
 
                     </div>

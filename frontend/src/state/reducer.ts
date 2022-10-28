@@ -24,6 +24,9 @@ export function appReducer(state: AppState, action: AppAction): AppState {
     case ActionType.SetBatchId:
       return {...state, ...action.payload};
 
+    case ActionType.SetAllPostageBatch:
+      return {...state, ...action.payload};
+
     case ActionType.SetChainId:
       return {...state, ...action.payload};
 
@@ -33,6 +36,9 @@ export function appReducer(state: AppState, action: AppAction): AppState {
     case ActionType.SetCurrentPage:
       return {...state, ...action.payload};
 
+    case ActionType.SetSwarmTopology:
+      return {...state, ...action.payload};
+  
     case ActionType.ThreadListDidMount:
       return {
         ...state,

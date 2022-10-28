@@ -94,7 +94,7 @@ export default function ThreadDetails() {
             {/* <div className='grid grid-cols-2 '>
                 <div className='col-span-1'>
                   <Link to={`/`}>
-                    <div className=' w-20 bg-fuchsia-600 grid justify-center'>
+                    <div className=' w-20 bg-pink-600 grid justify-center'>
                       <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 17l-5-5m0 0l5-5m-5 5h12" />
                       </svg>
@@ -104,7 +104,7 @@ export default function ThreadDetails() {
 
                 <div className='col-span-1 grid justify-items-end'>
                   <Link to={`/`}>
-                    <div className='w-20 bg-fuchsia-600 grid justify-center'>
+                    <div className='w-20 bg-pink-600 grid justify-center'>
                       <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
                       </svg>
@@ -141,12 +141,12 @@ export default function ThreadDetails() {
               <form onSubmit={submitForm} className='m-4'>
                 <label className="block">
                   <textarea 
-                    className="mt-1 block w-full mb-2 dark:bg-zinc-900 dark:text-slate-100 focus:border-fuchsia-600" 
+                    className="mt-1 block w-full mb-2 dark:bg-zinc-900 dark:text-slate-100 focus:border-pink-600" 
                     value={newComment}
                     onChange={(e) => setNewComment(e.target.value)}
                     placeholder={'write a comment'}
                   />
-                  <button type="submit" className='px-3 py-2 bg-fuchsia-600 dark:text-indigo-50' >
+                  <button type="submit" className='px-3 py-2 bg-pink-600 dark:text-indigo-50' >
                     Save Comment
                   </button>
                 </label>

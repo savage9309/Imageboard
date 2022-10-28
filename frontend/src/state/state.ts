@@ -2,7 +2,7 @@ import {BigNumber, Contract} from 'ethers';
 import {Deployment} from 'hardhat-deploy/types';
 import {Log} from '@ethersproject/abstract-provider';
 import {Imageboard, IERC20} from '../hardhat/typechain';
-import { BatchId } from '@ethersphere/bee-js';
+import { BatchId, PostageBatch, Topology } from '@ethersphere/bee-js';
 
 export enum Status {
   NotStarted = 'Not Started',
@@ -114,13 +114,15 @@ export interface AppState {
   bzz?: IERC20;
   bzzBalance?: BigNumber;
   bzzAllowance?: BigNumber;
-  batchId?: BatchId;
   totalThreads?: BigNumber;
   threads: Thread[];
   comments: Comment[];
   threadTransactions: IThreadTransaction[];
   commentTransactions: ICommentTransaction[];
   threadIds: string[];
+  swarmTopology?: Topology;
+  allPostageBatch: PostageBatch[];
+  batchId?: BatchId;
 }
 
 export const initialAppState: AppState = {
@@ -130,4 +132,5 @@ export const initialAppState: AppState = {
   threadTransactions: [],
   commentTransactions: [],
   threadIds: [],
+  allPostageBatch: []
 };
