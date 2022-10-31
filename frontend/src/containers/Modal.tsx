@@ -2,7 +2,8 @@ import { useWeb3React } from '@web3-react/core';
 import { useContext, useEffect, useState } from 'react';
 import { AppContext } from '../state/context';
 import { createPostageBatch, sendBzzApprove } from '../state/actionCreators';
-import { parseUnits } from 'ethers/lib/utils';
+import { formatUnits, parseUnits } from 'ethers/lib/utils';
+import { BigNumber, constants } from 'ethers';
 
 interface ModalProps {
     handleClose: React.MouseEventHandler<HTMLButtonElement>
@@ -11,7 +12,7 @@ interface ModalProps {
 export default function Modal({ handleClose }: ModalProps) {
 
     const { swarm } = window
-    const { connector, activate, error, library, chainId, account, active } = useWeb3React()
+    const { library, account, active } = useWeb3React()
 
     const { state, dispatch } = useContext(AppContext);
     const { coinBalance, bzzBalance, bzzAllowance, swarmTopology, batchId, allPostageBatch } = state
@@ -42,15 +43,6 @@ export default function Modal({ handleClose }: ModalProps) {
     }, [bzzBalance])
 
 
-
-    const [checkSwarm, setCheckSwarm] = useState(false)
-    useEffect(() => {
-        if(!swarm) return
-        setCheckSwarm(true)
-    }, [swarm])
-
-
-
     const [checkSwarmConnect, setCheckSwarmConnect] = useState(false)
     useEffect(() => {
         if (!swarm) return 
@@ -60,21 +52,11 @@ export default function Modal({ handleClose }: ModalProps) {
     }, [swarm, swarmTopology])
 
 
-
-    const [checkPostageStamp, setCheckPostageStamp] = useState(false)
-    useEffect(() => {
-        if(!allPostageBatch) return
-        setCheckPostageStamp(allPostageBatch.length > 0)
-    }, [allPostageBatch])
-
-
-
     const [checkBzzAllowance, setCheckBzzAllowance] = useState(false)
     useEffect(() => {
         if (!swarm) return
         if (!bzzAllowance) return
-        const allowance = bzzAllowance.toNumber()
-        setCheckBzzAllowance(allowance > 0)
+        setCheckBzzAllowance(bzzAllowance <= constants.MaxUint256)
     }, [swarm, bzzAllowance])
 
     
@@ -102,8 +84,7 @@ export default function Modal({ handleClose }: ModalProps) {
     const handleBzzApprove = async (e: React.MouseEvent<HTMLElement>) => {
         if(!account) return 
         if(!library) return 
-        const amount = parseUnits('0.1', 16)
-        dispatch(sendBzzApprove(account, library, amount))
+        dispatch(sendBzzApprove(account, library, constants.MaxUint256))
     }
 
     const handleCreatePostageBatch = async (e: React.MouseEvent<HTMLElement>) => {

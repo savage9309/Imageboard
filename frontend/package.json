@@ -2,6 +2,7 @@
   "name": "frontend",
   "version": "0.1.0",
   "private": true,
+  "homepage": ".",
   "dependencies": {
     "@ethersphere/bee-js": "^6.0.0-pre.0",
     "@ethersproject/abstract-provider": "^5.5.1",

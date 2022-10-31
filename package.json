@@ -18,6 +18,7 @@
     "solidity"
   ],
   "devDependencies": {
+    "@evmosdomains/content-hash": "^2.5.7",
     "@ethersproject/abi": "^5.0.0",
     "@ethersproject/bytes": "^5.0.0",
     "@ethersproject/providers": "^5.0.0",

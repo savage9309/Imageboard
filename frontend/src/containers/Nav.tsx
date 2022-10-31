@@ -9,7 +9,6 @@ import { sendThread  } from '../state/actionCreators';
 import { Link } from "react-router-dom";
 const Nav: React.FC = () => {
     const { swarm } = window
-    const { isDarkMode, toggle } = useDarkMode()
     const { state, dispatch } = useContext(AppContext);
     const { imageboard, batchId } = state
     const { account, library  } = useWeb3React()
@@ -70,18 +69,9 @@ const Nav: React.FC = () => {
       startUpload()
     },[file])
   
-    useEffect(()=>{
-        if(isDarkMode){
-          document.body.classList.add('dark')
-          document.body.classList.add('bg-zinc-900')
-          document.body.classList.remove('bg-slate-200')
-        }else{
-          document.body.classList.remove('dark')
-          document.body.classList.remove('bg-zinc-900')
-          document.body.classList.add('bg-slate-200')
-        }
-      },[isDarkMode])
-
+    document.body.classList.add('dark')
+    document.body.classList.add('bg-zinc-900')
+    document.body.classList.remove('bg-slate-200')
 
   
 

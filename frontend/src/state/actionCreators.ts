@@ -49,6 +49,7 @@ import {
 import localhostImageboardDeployment from '../hardhat/deployments/localhost/Imageboard.json';
 import localhostBzzDeployment from '../hardhat/deployments/localhost/BZZ.json';
 
+import xdaiImageboardDeployment from '../hardhat/deployments/xdai/Imageboard.json';
 import xdaiBzzDeployment from '../hardhat/deployments/xdai/BZZ.json';
 import toast from 'react-hot-toast';
 
@@ -60,7 +61,7 @@ export const getDeployments =
     if (!library) return false;
     switch (chainId) {
       case 100: // xdai main
-        //dispatch(setImageboardDeployment(xdaiImageboardDeployment));
+        dispatch(setImageboardDeployment(xdaiImageboardDeployment));
         dispatch(setBzzDeployment(xdaiBzzDeployment));
         break;
       case 1337: // localhost
@@ -299,6 +300,7 @@ export const sendThread = (account: string, library: Web3Provider, bzzhash: stri
       dispatch(addThreadTransaction(threadTransaction));
       await tx.wait();
     } catch (error) {
+      console.log(error)
       toast.error(`${error}`);
     }
   };
